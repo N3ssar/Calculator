@@ -11,6 +11,19 @@ const toggleDarkThemeWithEnter = (event) => {
 toggleElement.addEventListener("keydown", toggleDarkThemeWithEnter);
 toggleElement.addEventListener("click", toggleDarkTheme);
 
+// Add shake animation class
+const addShakeAnimation = (element) => {
+  element.classList.add("shake");
+  setTimeout(() => element.classList.remove("shake"), 500);
+};
+
+// Show error message
+const showError = (message) => {
+  resultElement.innerText = message;
+  addShakeAnimation(resultElement);
+  setTimeout(() => updateScreen(currentNumber || storedNumber || "0"), 1500);
+};
+
 // Logic for calculator
 let storedNumber = "";
 let currentNumber = "";
@@ -20,22 +33,16 @@ const resultElement = document.querySelector(".calc__result");
 const keyElements = document.querySelectorAll("[data-type]");
 
 const updateScreen = (value) => {
-    resultElement.innerText = !value ? "0" : value;
-
-    if (resultElement.innerText.length > 17) {
-        resultElement.classList.add('shrink');
-    } else {
-        resultElement.classList.remove('shrink');
-    }
-    
-     
+  resultElement.innerText = !value ? "0" : value;
 };
 
 const numberButtonHandler = (value) => {
   if (value === "." && currentNumber.includes(".")) return;
   if (value === "0" && !currentNumber) return;
-  if (currentNumber.length === 18) return;
-  console.log(currentNumber);
+  if (currentNumber.length === 18) {
+    showError("Max digits reached!");
+    return;
+  }
   currentNumber += value;
   updateScreen(currentNumber);
 };
@@ -61,22 +68,36 @@ const deleteButtonHandler = () => {
 
 const executeOperation = () => {
   if (currentNumber && storedNumber && operation) {
+    if (operation === "/" && parseFloat(currentNumber) === 0) {
+      showError("Cannot divide by zero!");
+      return;
+    }
+
+    let result;
     switch (operation) {
       case "+":
-        storedNumber = parseFloat(storedNumber) + parseFloat(currentNumber);
+        result = parseFloat(storedNumber) + parseFloat(currentNumber);
         break;
       case "-":
-        storedNumber = parseFloat(storedNumber) - parseFloat(currentNumber);
+        result = parseFloat(storedNumber) - parseFloat(currentNumber);
         break;
       case "*":
-        storedNumber = parseFloat(storedNumber) * parseFloat(currentNumber);
+        result = parseFloat(storedNumber) * parseFloat(currentNumber);
         break;
       case "/":
-        storedNumber = parseFloat(storedNumber) / parseFloat(currentNumber);
+        result = parseFloat(storedNumber) / parseFloat(currentNumber);
         break;
     }
-    currentNumber = storedNumber.toString(); // Store the result as currentNumber
-    updateScreen(currentNumber);
+
+    if (!isFinite(result)) {
+      showError("Number too large!");
+      return;
+    }
+
+    storedNumber = result.toString();
+    currentNumber = "";
+    operation = "";
+    updateScreen(storedNumber);
   }
 };
 
@@ -89,7 +110,6 @@ const operationButtonHandler = (operationValue) => {
     operation = operationValue;
   } else if (storedNumber) {
     operation = operationValue;
-
     if (currentNumber) executeOperation();
   }
 };
@@ -120,7 +140,7 @@ const keyElementsHandler = (element) => {
 
 keyElements.forEach(keyElementsHandler);
 
-// Use keyboard as input source
+// Keyboard input configuration
 const availableNumbers = [
   "0",
   "1",
@@ -132,16 +152,18 @@ const availableNumbers = [
   "7",
   "8",
   "9",
-  ".",
+  "."
 ];
-const availableOperations = ["+", "-", "*", "/","Backspace","Enter","c"];
+const availableOperations = ["+", "-", "*", "/"];
 const availableKeys = [
   ...availableNumbers,
   ...availableOperations,
+  "Backspace",
+  "Enter",
+  "c"
 ];
 
 window.addEventListener("keydown", (event) => {
-  //   keyboardWithoutHover(event.key);
   keyboardWithHover(event.key);
 });
 
@@ -159,13 +181,11 @@ const keyboardWithoutHover = (key) => {
   }
 };
 
-
 const keyboardWithHover = (key) => {
   if (availableKeys.includes(key)) {
     const elem = document.querySelector(`[data-value="${key}"]`);
-
     elem.classList.add("hover");
-    elem.click();//Simulate Click Action
-    setTimeout(() => elem.classList.remove("hover"), 300);
+    elem.click();
+    setTimeout(() => elem.classList.remove("hover"), 250);
   }
 };
