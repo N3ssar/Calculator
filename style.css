@@ -98,8 +98,18 @@ html {
   white-space: nowrap;
 }
 
+/* Add these styles to your existing CSS */
 .calc__result.shrink {
-  font-size: 2.8rem;
+  font-size: 2.4rem;
+  /* Smaller font size for error messages */
+  color: var(--color-key-red-background);
+  /* Red color for errors */
+  transition: all 0.3s ease;
+}
+
+.error-message {
+  color: #ff3333;
+  font-weight: bold;
 }
 
 .calc__numsContent {
@@ -273,25 +283,4 @@ html {
 
 .themes__toggle--isActive:before {
   left: calc(var(--toggle-width) - var(--circle-width) - var(--toggle-padding));
-}
-
-/*# sourceMappingURL=style.css.map */
-@keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  75% {
-    transform: translateX(5px);
-  }
-}
-
-.shake {
-  animation: shake 0.3s ease-in-out;
 }
