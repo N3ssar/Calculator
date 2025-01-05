@@ -23,12 +23,19 @@ const updateScreen = (value) => {
   resultElement.innerText = !value ? "0" : value;
 };
 
+const resetButtonHandler = () => {
+  storedNumber = "";
+  currentNumber = "";
+  operation = "";
+  updateScreen(currentNumber);
+};
+
 const errorHandler = (message) => {
   resultElement.classList.add("error-message");
   updateScreen(message);
   setTimeout(() => {
     resultElement.classList.remove("error-message");
-    updateScreen(currentNumber);
+    resetButtonHandler();
   }, 2000);
 };
 
@@ -39,13 +46,6 @@ const numberButtonHandler = (value) => {
   if (currentNumber.length === 18) return;
   console.log(currentNumber);
   currentNumber += value;
-  updateScreen(currentNumber);
-};
-
-const resetButtonHandler = () => {
-  storedNumber = "";
-  currentNumber = "";
-  operation = "";
   updateScreen(currentNumber);
 };
 
