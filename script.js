@@ -11,19 +11,6 @@ const toggleDarkThemeWithEnter = (event) => {
 toggleElement.addEventListener("keydown", toggleDarkThemeWithEnter);
 toggleElement.addEventListener("click", toggleDarkTheme);
 
-// Add shake animation class
-const addShakeAnimation = (element) => {
-  element.classList.add("shake");
-  setTimeout(() => element.classList.remove("shake"), 500);
-};
-
-// Show error message
-const showError = (message) => {
-  resultElement.innerText = message;
-  addShakeAnimation(resultElement);
-  setTimeout(() => updateScreen(currentNumber || storedNumber || "0"), 1500);
-};
-
 // Logic for calculator
 let storedNumber = "";
 let currentNumber = "";
@@ -36,13 +23,21 @@ const updateScreen = (value) => {
   resultElement.innerText = !value ? "0" : value;
 };
 
+const errorHandler = (message) => {
+  resultElement.classList.add("error-message");
+  updateScreen(message);
+  setTimeout(() => {
+    resultElement.classList.remove("error-message");
+    updateScreen(currentNumber);
+  }, 2000);
+};
+
 const numberButtonHandler = (value) => {
   if (value === "." && currentNumber.includes(".")) return;
-  if (value === "0" && !currentNumber) return;
-  if (currentNumber.length === 18) {
-    showError("Max digits reached!");
+  if ((value === "0" && currentNumber === "0") || currentNumber === null)
     return;
-  }
+  if (currentNumber.length === 18) return;
+  console.log(currentNumber);
   currentNumber += value;
   updateScreen(currentNumber);
 };
@@ -68,35 +63,26 @@ const deleteButtonHandler = () => {
 
 const executeOperation = () => {
   if (currentNumber && storedNumber && operation) {
-    if (operation === "/" && parseFloat(currentNumber) === 0) {
-      showError("Cannot divide by zero!");
-      return;
-    }
-
-    let result;
     switch (operation) {
       case "+":
-        result = parseFloat(storedNumber) + parseFloat(currentNumber);
+        storedNumber = parseFloat(storedNumber) + parseFloat(currentNumber);
         break;
       case "-":
-        result = parseFloat(storedNumber) - parseFloat(currentNumber);
+        storedNumber = parseFloat(storedNumber) - parseFloat(currentNumber);
         break;
       case "*":
-        result = parseFloat(storedNumber) * parseFloat(currentNumber);
+        storedNumber = parseFloat(storedNumber) * parseFloat(currentNumber);
         break;
       case "/":
-        result = parseFloat(storedNumber) / parseFloat(currentNumber);
+        if (currentNumber === "0") {
+          errorHandler("Error: Division by zero");
+          return;
+        }
+        storedNumber = parseFloat(storedNumber) / parseFloat(currentNumber);
         break;
     }
 
-    if (!isFinite(result)) {
-      showError("Number too large!");
-      return;
-    }
-
-    storedNumber = result.toString();
     currentNumber = "";
-    operation = "";
     updateScreen(storedNumber);
   }
 };
@@ -110,6 +96,7 @@ const operationButtonHandler = (operationValue) => {
     operation = operationValue;
   } else if (storedNumber) {
     operation = operationValue;
+
     if (currentNumber) executeOperation();
   }
 };
@@ -140,7 +127,7 @@ const keyElementsHandler = (element) => {
 
 keyElements.forEach(keyElementsHandler);
 
-// Keyboard input configuration
+// Use keyboard as input source
 const availableNumbers = [
   "0",
   "1",
@@ -164,6 +151,7 @@ const availableKeys = [
 ];
 
 window.addEventListener("keydown", (event) => {
+  //   keyboardWithoutHover(event.key);
   keyboardWithHover(event.key);
 });
 
@@ -184,8 +172,9 @@ const keyboardWithoutHover = (key) => {
 const keyboardWithHover = (key) => {
   if (availableKeys.includes(key)) {
     const elem = document.querySelector(`[data-value="${key}"]`);
+
     elem.classList.add("hover");
     elem.click();
-    setTimeout(() => elem.classList.remove("hover"), 250);
+    setTimeout(() => elem.classList.remove("hover"), 100);
   }
 };
